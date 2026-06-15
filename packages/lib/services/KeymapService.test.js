@@ -115,14 +115,17 @@ describe('services_KeymapService', () => {
 			expect(keymapService.getAccelerator('synchronize')).toEqual('Cmd+S');
 			expect(keymapService.getAccelerator('textSelectAll')).toEqual('Cmd+A');
 			expect(keymapService.getAccelerator('textBold')).toEqual('Cmd+B');
+			expect(keymapService.getAccelerator('closeWindow')).toEqual('Cmd+W');
 
 			keymapService.initialize([], 'linux');
 			expect(keymapService.getAccelerator('newNote')).toEqual('Ctrl+N');
 			expect(keymapService.getAccelerator('synchronize')).toEqual('Ctrl+S');
+			expect(keymapService.getAccelerator('closeWindow')).toEqual('Ctrl+W');
 
 			keymapService.initialize([], 'win32');
 			expect(keymapService.getAccelerator('textSelectAll')).toEqual('Ctrl+A');
 			expect(keymapService.getAccelerator('textBold')).toEqual('Ctrl+B');
+			expect(keymapService.getAccelerator('closeWindow')).toEqual('Ctrl+W');
 		});
 
 		it('should throw when an invalid command is requested', () => {
@@ -246,6 +249,25 @@ describe('services_KeymapService', () => {
 				// Also check if keymap is updated or not
 				expect(keymapService.getAccelerator(command)).toEqual(accelerator);
 			});
+		});
+
+		it('should import legacy undo and redo command names', () => {
+			// Regression test for #15308: keymap files saved before 3.6.11 used
+			// "editor.undo" / "editor.redo" for the global undo/redo accelerators.
+			// In 3.6.11 these were renamed to "globalUndo" / "globalRedo", so
+			// importing the old file would clash with the new defaults that
+			// already bind Ctrl+Z / Ctrl+Y to the renamed commands.
+			keymapService.initialize([], 'win32');
+			const customKeymapItems = [
+				{ command: 'editor.undo', accelerator: 'Ctrl+Z' },
+				{ command: 'editor.redo', accelerator: 'Ctrl+Y' },
+			];
+
+			expect(() => keymapService.overrideKeymap(customKeymapItems)).not.toThrow();
+			expect(keymapService.getAccelerator('globalUndo')).toEqual('Ctrl+Z');
+			expect(keymapService.getAccelerator('globalRedo')).toEqual('Ctrl+Y');
+			expect(keymapService.getCommandNames()).not.toContain('editor.undo');
+			expect(keymapService.getCommandNames()).not.toContain('editor.redo');
 		});
 
 		it('should throw when the required properties are missing', () => {

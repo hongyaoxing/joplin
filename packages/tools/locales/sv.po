@@ -1,12 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Laurent Cozic
 # This file is distributed under the same license as the Joplin-CLI package.
-# Jonatan Nyberg, 2023, 2024, 2025.
+# Jonatan Nyberg, 2023, 2024, 2025, 2026.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Joplin-CLI 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
 "Last-Translator: Isak Bergdahl\n"
 "Language-Team: \n"
 "Language: sv\n"
@@ -14,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.6\n"
 
 #: packages/app-mobile/components/screens/ConfigScreen/ConfigScreen.tsx:621
 msgid "- Camera: to allow taking a picture and attaching it to a note."
@@ -57,7 +59,7 @@ msgstr "(Ingen)"
 
 #: packages/app-cli/app/command-share.ts:141
 msgid "(Read-only)"
-msgstr "(skrivskyddad)"
+msgstr "(Skrivskyddad)"
 
 #: packages/lib/models/settings/builtInMetadata.ts:54
 #: packages/lib/models/settings/builtInMetadata.ts:55
@@ -329,7 +331,7 @@ msgstr "A5"
 
 #: packages/lib/models/settings/builtInMetadata.ts:1121
 msgid "ABC musical notation: Options"
-msgstr ""
+msgstr "ABC-notation: Alternativ"
 
 #: packages/app-mobile/components/screens/ConfigScreen/plugins/PluginBox/index.tsx:62
 #: packages/app-mobile/components/screens/ConfigScreen/plugins/PluginInfoModal.tsx:240
@@ -344,18 +346,18 @@ msgstr "Om Joplin"
 #: packages/lib/services/KeymapService.ts:339
 #: packages/lib/services/KeymapService.ts:344
 msgid "accelerator"
-msgstr "accelerator"
+msgstr "kortkommando"
 
 #: packages/lib/services/KeymapService.ts:396
 msgid "Accelerator \"%s\" is not valid."
-msgstr "Acceleratorn \"%s\" är inte giltig."
+msgstr "Kortkommandot \"%s\" är inte giltigt."
 
 #: packages/lib/services/KeymapService.ts:365
 msgid ""
 "Accelerator \"%s\" is used for \"%s\" and \"%s\" commands. This may lead to "
 "unexpected behaviour."
 msgstr ""
-"Acceleratorn \"%s\" används för \"%s\" och \"%s\" kommandon. Detta kan leda "
+"Kortkommandot \"%s\" används för \"%s\" och \"%s\" kommandon. Detta kan leda "
 "till oväntat beteende."
 
 #: packages/app-desktop/gui/MainScreen.tsx:564
@@ -608,7 +610,7 @@ msgid ""
 msgstr ""
 "Alla e-postmeddelanden som skickas till den här adressen kommer att "
 "omvandlas till en anteckning och läggas till i din samling. Anteckningen "
-"kommer att sparas anteckningsboken Inbox"
+"kommer att sparas i anteckningsboken Inbox"
 
 #: packages/lib/models/Setting.ts:1354
 msgid "Appearance"
@@ -759,7 +761,7 @@ msgstr "Formatera Markdown automatiskt i Avancerad textredigerare"
 
 #: packages/lib/models/settings/builtInMetadata.ts:743
 msgid "Auto-pair braces, parentheses, quotations, etc."
-msgstr "Para automatiskt hakparenteser, paranteser, situationstecken, etc."
+msgstr "Para ihop klamrar, parenteser, citattecken etc. automatiskt."
 
 #: packages/lib/models/settings/builtInMetadata.ts:754
 msgid "Autocomplete Markdown and HTML"
@@ -799,7 +801,7 @@ msgstr "Beta"
 
 #: packages/app-mobile/components/NoteEditor/commandDeclarations.ts:123
 msgid "Block code"
-msgstr ""
+msgstr "Kodblock"
 
 #: packages/app-desktop/gui/NoteEditor/editorCommandDeclarations.ts:55
 #: packages/app-mobile/components/NoteEditor/commandDeclarations.ts:80
@@ -917,9 +919,8 @@ msgid "Cannot change encrypted item"
 msgstr "Det går inte att ändra krypterat objekt"
 
 #: packages/lib/commands/convertNoteToMarkdown.ts:42
-#, fuzzy
 msgid "Cannot convert read-only item: \"%s\""
-msgstr "Kan inte skapa en ny anteckning: %s"
+msgstr "Kan inte konvertera skrivskyddat objekt: \"%s\""
 
 #: packages/lib/models/Note.ts:622
 msgid "Cannot copy note to \"%s\" notebook"
@@ -959,7 +960,7 @@ msgstr "Det går inte att hitta \"%s\"."
 
 #: packages/app-cli/app/command-mkbook.ts:28
 msgid "Cannot find: \"%s\""
-msgstr "Det går inte att hitta: \"%s\"."
+msgstr "Det går inte att hitta: \"%s\""
 
 #: packages/app-cli/app/command-sync.ts:203
 msgid "Cannot initialise synchroniser."
@@ -1081,7 +1082,7 @@ msgstr "Kontrollerar... vänta."
 
 #: packages/app-desktop/gui/NoteContentPropertiesDialog.tsx:114
 msgid "Chinese/Japanese/Korean characters"
-msgstr ""
+msgstr "Kinesiska/japanska/koreanska tecken"
 
 #: packages/app-mobile/components/screens/Note/commands/attachFile.ts:98
 msgid "Choose an option"
@@ -1249,7 +1250,7 @@ msgstr "Kommando"
 
 #: packages/app-cli/app/command-keymap.ts:30
 msgid "COMMAND"
-msgstr ""
+msgstr "KOMMANDO"
 
 #: packages/app-desktop/plugins/GotoAnything.tsx:783
 msgid "Command palette"
@@ -1314,9 +1315,8 @@ msgid "Configuration"
 msgstr "Konfiguration"
 
 #: packages/app-cli/app/command-keymap.ts:24
-#, fuzzy
 msgid "Configured keyboard shortcuts:"
-msgstr "Tangentbordsgenvägar"
+msgstr "Konfigurerade kortkommandon:"
 
 #: packages/lib/models/settings/builtInMetadata.ts:1296
 msgid "Configures the size of scrollbars used in the app."
@@ -1391,9 +1391,8 @@ msgid "Convert it"
 msgstr "Konvertera den"
 
 #: packages/lib/commands/convertNoteToMarkdown.ts:18
-#, fuzzy
 msgid "Convert to Markdown"
-msgstr "Konvertera anteckning till Markdown"
+msgstr "Konvertera till Markdown"
 
 #: packages/app-mobile/components/screens/Note/Note.tsx:1350
 msgid "Convert to note"
@@ -1405,7 +1404,7 @@ msgstr "Konvertera till att-göra"
 
 #: packages/app-mobile/components/voiceTyping/SpeechToTextBanner.tsx:161
 msgid "Converting speech to text..."
-msgstr "Konverterar tal till text..."
+msgstr "Omvandlar tal till text..."
 
 #: packages/app-desktop/gui/MenuBar.tsx:550
 #: packages/app-desktop/gui/NoteEditor/editorCommandDeclarations.ts:35
@@ -1499,9 +1498,8 @@ msgid "Could not connect to plugin repository."
 msgstr "Det gick inte att ansluta till insticksmodulsförrådet."
 
 #: packages/lib/commands/convertNoteToMarkdown.ts:70
-#, fuzzy
 msgid "Could not convert notes to Markdown: %s"
-msgstr "Kunde inte konvertera anteckning till Markdown: %s"
+msgstr "Det gick inte att konvertera anteckningar till Markdown: %s"
 
 #: packages/app-desktop/InteropServiceHelper.ts:235
 msgid "Could not export notes: %s"
@@ -1529,7 +1527,7 @@ msgstr "Det gick inte att byta profil: %s"
 
 #: packages/lib/components/EncryptionConfigScreen/utils.ts:224
 msgid "Could not upgrade master key: %s"
-msgstr "Lyckades inte uppgradera huvudnyckel: %s"
+msgstr "Det gick inte att uppgradera huvudnyckel: %s"
 
 #: packages/lib/commands/leaveSharedFolder.ts:33
 msgid ""
@@ -1813,14 +1811,15 @@ msgid "Delete profile \"%s\""
 msgstr "Ta bort profilen \"%s\""
 
 #: packages/app-desktop/gui/ProfileEditor.tsx:147
-#, fuzzy
 msgid ""
 "Delete profile \"%s\"?\n"
 "\n"
 "All data, including notes, notebooks and tags will be permanently deleted."
 msgstr ""
-"All data, inklusive anteckningar, anteckningsböcker och taggar kommer att "
-"tas bort permanent."
+"Ta bort profilen \"%s\"?\n"
+"\n"
+"All data, inklusive anteckningar, anteckningsböcker och taggar, kommer att "
+"raderas permanent."
 
 #: packages/editor/ProseMirror/plugins/tablePlugin.ts:36
 msgid "Delete row"
@@ -1837,6 +1836,10 @@ msgid ""
 "All notes associated with this tag will remain, but the tag will be removed "
 "from all notes."
 msgstr ""
+"Ta bort taggen \"%s\"?\n"
+"\n"
+"Alla anteckningar som är kopplade till denna tagg kommer att finnas kvar, "
+"men taggen kommer att tas bort från alla anteckningar."
 
 #: packages/app-desktop/gui/WindowCommandsAndDialogs/commands/deleteFolder.ts:38
 #: packages/app-mobile/components/side-menu-content.tsx:414
@@ -1898,7 +1901,7 @@ msgstr "Tar bort anteckningarna utan att be om bekräftelse."
 
 #: packages/app-mobile/components/screens/ConfigScreen/ConfigScreen.tsx:579
 msgid "Deletion log"
-msgstr "Borttagningslogg"
+msgstr "Raderingslogg"
 
 #: packages/app-mobile/components/NoteItem.tsx:152
 msgid "Deselect"
@@ -2021,7 +2024,7 @@ msgstr "Visar fullständig information om anteckning."
 
 #: packages/app-cli/app/command-keymap.ts:14
 msgid "Displays the configured keyboard shortcuts."
-msgstr ""
+msgstr "Visar de konfigurerade kortkommandona."
 
 #: packages/app-cli/app/command-cat.ts:14
 msgid "Displays the given note."
@@ -2081,8 +2084,8 @@ msgid ""
 "Don't allow the share recipient to write to the shared notebook. Valid only "
 "for the `add` subcommand."
 msgstr ""
-"Tillåt inte delningsmottagaren att skriva till den delade anteckningsboken. "
-"Gäller endast för underkommandot `add`."
+"Tillåt inte mottagaren av delningen att skriva till den delade "
+"anteckningsboken. Gäller endast för underkommandot `add`."
 
 #: packages/app-desktop/gui/NoteEditor/NoteEditor.tsx:668
 msgid "Don't show this message again"
@@ -2242,9 +2245,8 @@ msgid "Edit profile configuration..."
 msgstr "Redigera profilkonfiguration..."
 
 #: packages/app-mobile/components/screens/tags.tsx:64
-#, fuzzy
 msgid "Edit tag"
-msgstr "Redigera anteckning."
+msgstr "Redigera tagg"
 
 #: packages/app-desktop/gui/MainScreen.tsx:129
 #: packages/app-desktop/gui/NoteContentPropertiesDialog.tsx:151
@@ -2354,9 +2356,8 @@ msgid "Enable abbreviation syntax"
 msgstr "Aktivera förkortningssyntax"
 
 #: packages/lib/models/settings/builtInMetadata.ts:1093
-#, fuzzy
 msgid "Enable ABC musical notation support"
-msgstr "Aktivera stöd för Fountain-syntax"
+msgstr "Aktivera stöd för ABC musiknotation"
 
 #: packages/lib/models/settings/builtInMetadata.ts:1095
 msgid "Enable audio player"
@@ -2450,7 +2451,7 @@ msgstr "Aktivera stavningskontroll i textredigeraren"
 
 #: packages/lib/models/settings/builtInMetadata.ts:1100
 msgid "Enable table of contents extension"
-msgstr "Aktivera innehållsförteckningen"
+msgstr "Aktivera tillägget för innehållsförteckning"
 
 #: packages/lib/models/settings/builtInMetadata.ts:939
 msgid "Enable the Markdown toolbar"
@@ -2481,8 +2482,8 @@ msgid ""
 "Enables Markdown list continuation, auto-closing HTML tags, and other markup "
 "autocompletions."
 msgstr ""
-"Aktiverar Markdown-listfortsättning, automatisk stängning av HTML-taggar och "
-"andra märkspråksautokompletteringar."
+"Aktiverar fortsättning av Markdown-listor, automatisk stängning av HTML-"
+"taggar och annan autokomplettering för märkning."
 
 #: packages/lib/models/settings/builtInMetadata.ts:787
 msgid ""
@@ -2740,7 +2741,7 @@ msgstr ""
 #: packages/app-desktop/gui/SsoLoginScreen/SsoLoginScreen.tsx:29
 #: packages/app-mobile/components/screens/SsoLoginScreen.tsx:54
 msgid "Failed to connect to your account. Please try again."
-msgstr "Det gick inte att ansluta till ditt konto. Vänligen försök igen."
+msgstr "Det gick inte att ansluta till ditt konto. Försök igen."
 
 #: packages/app-cli/app/main.js:107
 msgid "Fatal error:"
@@ -2960,7 +2961,7 @@ msgstr "Bevilja auktorisation"
 
 #: packages/app-cli/app/command-sync.ts:117
 msgid "Have you authorised the application login in the above URL?"
-msgstr "Har du auktoriserat applikationsinloggningen i ovanstående URL?"
+msgstr "Har du godkänt inloggningen för programmet i ovanstående URL?"
 
 #: packages/app-mobile/components/NoteEditor/commandDeclarations.ts:45
 msgid "Header %d"
@@ -3078,7 +3079,7 @@ msgid ""
 "If you have already authorised, please wait for the application to sync to "
 "Joplin Cloud."
 msgstr ""
-"Om du redan har auktoriserat, vänta tills applikationen synkroniseras med "
+"Om du redan har auktoriserat, vänta tills programmet synkroniseras med "
 "Joplin Cloud."
 
 #: packages/app-desktop/ElectronAppWrapper.ts:184
@@ -3132,9 +3133,8 @@ msgid "Import or export your data"
 msgstr "Importera eller exportera dina data"
 
 #: packages/app-desktop/gui/WindowCommandsAndDialogs/commands/importFrom.ts:20
-#, fuzzy
 msgid "Import..."
-msgstr "Importerar..."
+msgstr "Importera..."
 
 #: packages/app-mobile/components/screens/ConfigScreen/NoteExportSection/NoteImportButton.tsx:76
 msgid "Imported successfully!"
@@ -3193,23 +3193,24 @@ msgid ""
 "\n"
 "Important: you only need to run this ONCE on one device."
 msgstr ""
-"För att göra detta måste all din datauppsättning vara krypterad och "
-"synkroniserad, det är bäst köra processen över natten.\n"
+"För att göra det måste hela din datamängd krypteras och synkroniseras, så "
+"det är bäst att köra den över natten.\n"
 "\n"
-"För att starta processen, följ dessa instruktioner:\n"
+"För att börja, följ dessa instruktioner:\n"
 "\n"
-"1. Synkronisera alla dina enheter.\\n\n"
-"2. Klicka \\\"%s\\\"\n"
-"3. Låt den köra färdigt. Medan den kör, undvik att göra ändringar i några "
-"anteckningar på dina andra enheter för att undvika konflikter.\n"
-"4. När synkroniseringen är färdig på denna enhet, synkronisera alla dina "
-"andra enheter och låt processen köra färdigt.\n"
+"1. Synkronisera alla dina enheter.\n"
+"2. Klicka på \"%s\".\n"
+"3. Låt den köras tills den är klar. Undvik att ändra några anteckningar på "
+"dina andra enheter medan den körs, för att undvika konflikter.\n"
 "\n"
-"Viktigt: du behöver bara köra denna process EN gång på en enhet."
+"4. När synkroniseringen är klar på den här enheten, synkronisera alla dina "
+"andra enheter och låt den köras tills den är klar.\n"
+"\n"
+"Viktigt: du behöver bara köra detta EN GÅNG på en enhet."
 
 #: packages/lib/services/synchronizer/syncInfoUtils.ts:499
 msgid "In order to synchronise, please upgrade your application to version %s+"
-msgstr "För att synkronisera, uppgradera din applikation till version %s+"
+msgstr "För att synkronisera, uppgradera programmet till version %s+"
 
 #: packages/app-mobile/components/screens/ConfigScreen/ConfigScreen.tsx:143
 #: packages/app-mobile/components/screens/ConfigScreen/ConfigScreen.tsx:245
@@ -3530,7 +3531,7 @@ msgstr "Nyckelring som stöds: %s"
 
 #: packages/app-cli/app/command-keymap.ts:30
 msgid "KEYS"
-msgstr ""
+msgstr "TANGENTER"
 
 #: packages/app-desktop/gui/EncryptionConfigScreen/EncryptionConfigScreen.tsx:74
 msgid "Keys that need upgrading"
@@ -3758,6 +3759,8 @@ msgid ""
 "Manage your profiles. You can rename or delete profiles. The active profile "
 "cannot be deleted."
 msgstr ""
+"Hantera dina profiler. Du kan byta namn på eller ta bort profiler. Den "
+"aktiva profilen kan inte tas bort."
 
 #. `generate-ppk`
 #: packages/app-cli/app/command-e2ee.ts:19
@@ -3918,17 +3921,16 @@ msgstr[0] "Flytta %d anteckning till anteckningsboken \"%s\"?"
 msgstr[1] "Flytta %d anteckningar till anteckningsboken \"%s\"?"
 
 #: packages/app-desktop/gui/WindowCommandsAndDialogs/commands/deleteFolder.ts:34
-#, fuzzy
 msgid ""
 "Move %d notebooks to the trash?\n"
 "\n"
 "All notes and sub-notebooks within these notebooks will also be moved to the "
 "trash."
 msgstr ""
-"Flytta anteckningsboken \"%s\" till papperskorgen?\n"
+"Flytta %d anteckningsböcker till papperskorgen?\n"
 "\n"
-"Alla anteckningar och underanteckningsböcker i den här anteckningsboken "
-"kommer också att flyttas till papperskorgen."
+"Alla anteckningar och underanteckningsböcker i dessa anteckningsböcker "
+"flyttas också till papperskorgen."
 
 #: packages/app-desktop/gui/ResizableLayout/MoveButtons.tsx:73
 msgid "Move down"
@@ -4169,7 +4171,7 @@ msgstr "Inga uppdateringar tillgängliga"
 
 #: packages/lib/components/shared/SamlShared.ts:12
 msgid "No URL for SAML authentication set."
-msgstr ""
+msgstr "Ingen URL för SAML-autentisering angiven."
 
 #: packages/app-cli/app/command-share.ts:188
 #: packages/app-cli/app/command-share.ts:208
@@ -4503,7 +4505,7 @@ msgstr "Öppna inställningar"
 
 #: packages/app-mobile/components/screens/ConfigScreen/plugins/EnablePluginSupportPage.tsx:115
 msgid "Open Source"
-msgstr "Öppna källa"
+msgstr "Öppen källkod"
 
 #: packages/app-mobile/components/screens/ConfigScreen/ConfigScreen.tsx:557
 #: packages/lib/models/settings/builtInMetadata.ts:108
@@ -4512,7 +4514,7 @@ msgstr "Öppna synkroniseringsguiden..."
 
 #: packages/app-mobile/components/screens/ConfigScreen/ConfigScreen.tsx:635
 msgid "Open-source licences"
-msgstr ""
+msgstr "Öppen källkodslicenser"
 
 #: packages/app-desktop/gui/NoteEditor/utils/contextMenu.ts:87
 msgid "Open..."
@@ -4551,6 +4553,8 @@ msgid ""
 "Options that should be used whenever rendering ABC code. It must be a JSON5 "
 "object. The full list of options is available at: %s"
 msgstr ""
+"Alternativ som bör användas vid rendering av ABC-kod. Det måste vara ett "
+"JSON5-objekt. Den fullständiga listan över alternativ finns på: %s"
 
 #: packages/app-mobile/components/NoteEditor/commandDeclarations.ts:103
 msgid "Ordered list"
@@ -4746,7 +4750,7 @@ msgstr ""
 
 #: packages/server/src/utils/saml.ts:58
 msgid "Please wait while we load your organisation sign-in page..."
-msgstr "Vänligen vänta medan vi laddar din organisations inloggningssida..."
+msgstr "Vänta medan vi laddar din organisations inloggningssida..."
 
 #: packages/app-desktop/gui/ConfigScreen/controls/plugins/SearchPlugins.tsx:118
 #: packages/app-desktop/gui/ResourceScreen.tsx:315
@@ -4898,7 +4902,7 @@ msgstr "Bearbeta raderingar av användare"
 
 #: packages/lib/models/Resource.ts:32
 msgid "Processing"
-msgstr "Bearbetning"
+msgstr "Bearbetar"
 
 #: packages/app-mobile/components/CameraView/ActionButtons.tsx:111
 msgid "Processing photo..."
@@ -4914,9 +4918,8 @@ msgid "Profile name"
 msgstr "Profilnamn"
 
 #: packages/app-desktop/gui/ProfileEditor.tsx:120
-#, fuzzy
 msgid "Profile name cannot be empty"
-msgstr "Bekräfta lösenordet inte kan vara tomt"
+msgstr "Profilnamnet får inte vara tomt"
 
 #: packages/app-desktop/gui/ProfileEditor.tsx:116
 #: packages/app-desktop/gui/WindowCommandsAndDialogs/commands/addProfile.ts:18
@@ -5110,11 +5113,8 @@ msgid "Remove"
 msgstr "Ta bort"
 
 #: packages/app-desktop/gui/Sidebar/hooks/useOnRenderItem.tsx:134
-#, fuzzy
 msgid "Remove %d tags from all notes? This cannot be undone."
-msgstr ""
-"Ta bort modell och hämta igen?\n"
-"Detta kan inte ångras."
+msgstr "Ta bort %d taggar från alla anteckningar? Detta kan inte ångras."
 
 #: packages/app-mobile/components/TagEditor.tsx:136
 msgid "Remove %s"
@@ -5225,7 +5225,7 @@ msgstr "Rapporter"
 
 #: packages/app-desktop/gui/WindowCommandsAndDialogs/commands/resetLayout.ts:7
 msgid "Reset application layout"
-msgstr "Återställ applikationslayout"
+msgstr "Återställ programmets layout"
 
 #: packages/app-desktop/gui/MasterPasswordDialog/Dialog.tsx:221
 #: packages/app-desktop/gui/MasterPasswordDialog/Dialog.tsx:222
@@ -5301,12 +5301,12 @@ msgstr "Försök igen"
 #: packages/app-desktop/gui/StatusScreen/StatusScreen.tsx:86
 #: packages/app-mobile/components/screens/status.tsx:191
 msgid "Retry All"
-msgstr "Försök igen alla"
+msgstr "Försök igen med alla"
 
 #: packages/app-desktop/gui/NoteEditor/utils/contextMenu.ts:176
 #: packages/app-desktop/gui/WindowCommandsAndDialogs/commands/revealResourceFile.ts:8
 msgid "Reveal file in folder"
-msgstr "Visa filen i mappen"
+msgstr "Visa fil i mapp"
 
 #: packages/app-desktop/gui/WindowCommandsAndDialogs/commands/toggleNotesSortOrderReverse.ts:8
 #: packages/lib/models/settings/builtInMetadata.ts:825
@@ -5531,7 +5531,7 @@ msgstr "Välj överordnad anteckningsbok"
 
 #: packages/app-desktop/gui/WindowCommandsAndDialogs/commands/importFrom.ts:42
 msgid "Select the type of file to be imported:"
-msgstr ""
+msgstr "Välj vilken typ av fil som ska importeras:"
 
 #: packages/app-mobile/components/ComboBox.tsx:378
 msgid "Selected: %s"
@@ -5581,13 +5581,13 @@ msgid ""
 "Set it to 0 to make it take the complete available space. Recommended width "
 "is 600."
 msgstr ""
-"Ställ in det till 0 för att få det att ta det kompletta lediga utrymmet. "
+"Sätt den till 0 för att den ska ta upp hela det tillgängliga utrymmet. "
 "Rekommenderad bredd är 600."
 
 #: packages/app-desktop/gui/MainScreen.tsx:531
 #: packages/app-desktop/gui/MainScreen.tsx:578
 msgid "Set the password"
-msgstr "Ställ in lösenord"
+msgstr "Välj lösenord"
 
 #: packages/app-cli/app/command-set.ts:22
 msgid ""
@@ -5751,7 +5751,7 @@ msgstr "Storlek"
 
 #: packages/app-desktop/checkForUpdates.ts:109
 msgid "Skip this version"
-msgstr "Hoppa över denna versionen"
+msgstr "Hoppa över den här versionen"
 
 #: packages/app-cli/app/command-e2ee.ts:67
 msgid "Skipped items: %d (use --retry-failed-items to retry decrypting them)"
@@ -5855,11 +5855,11 @@ msgstr "Källa: "
 
 #: packages/app-cli/app/command-keymap.ts:35
 msgid "SPACE"
-msgstr ""
+msgstr "BLANKSTEG"
 
 #: packages/app-desktop/gui/Sidebar/hooks/useOnRenderItem.tsx:456
 msgid "Spacer"
-msgstr "Spacer"
+msgstr "Mellanrum"
 
 #: packages/lib/models/settings/builtInMetadata.ts:1680
 msgid ""
@@ -5878,7 +5878,7 @@ msgstr "Stavningskontroll"
 #: packages/lib/models/settings/builtInMetadata.ts:708
 #: packages/lib/models/settings/builtInMetadata.ts:709
 msgid "Split View"
-msgstr "Dela vy"
+msgstr "Delad vy"
 
 #: packages/lib/models/settings/builtInMetadata.ts:1148
 msgid "Start application minimised in the tray icon"
@@ -6166,18 +6166,16 @@ msgid "Tab moves focus"
 msgstr "Tabb flyttar fokus"
 
 #: packages/app-mobile/components/NoteEditor/commandDeclarations.ts:118
-#, fuzzy
 msgid "Table"
-msgstr "Aktivera"
+msgstr "Tabell"
 
 #: packages/lib/models/settings/builtInMetadata.ts:1440
 msgid "Tabloid"
 msgstr "Tabloid"
 
 #: packages/app-mobile/components/screens/tags.tsx:206
-#, fuzzy
 msgid "Tag: %s"
-msgstr "Användning: %s"
+msgstr "Tagg: %s"
 
 #: packages/app-cli/app/command-import.ts:58
 #: packages/app-desktop/gui/ImportScreen.tsx:94
@@ -6402,7 +6400,6 @@ msgstr ""
 "anteckningsboken \"%s\"."
 
 #: packages/lib/commands/convertNoteToMarkdown.ts:64
-#, fuzzy
 msgid ""
 "The note has been converted to Markdown and the original note has been moved "
 "to the trash"
@@ -6413,8 +6410,8 @@ msgstr[0] ""
 "Anteckningen har konverterats till Markdown och den ursprungliga "
 "anteckningen har flyttats till papperskorgen"
 msgstr[1] ""
-"Anteckningen har konverterats till Markdown och den ursprungliga "
-"anteckningen har flyttats till papperskorgen"
+"Anteckningarna har konverterats till Markdown och originalanteckningarna har "
+"flyttats till papperskorgen"
 
 #: packages/app-desktop/gui/TrashNotification/TrashNotification.tsx:45
 msgid "The note was successfully moved to the trash."
@@ -6804,8 +6801,8 @@ msgid ""
 "To allow Joplin to synchronise with Joplin Cloud, please login using this "
 "URL:"
 msgstr ""
-"För att tillåta Joplin att synkronisera med Joplin Cloud, vänligen logga in "
-"med denna URL:"
+"För att tillåta Joplin att synkronisera med Joplin Cloud, logga in med denna "
+"URL:"
 
 #: packages/app-desktop/gui/SsoLoginScreen/SsoLoginScreen.tsx:36
 #: packages/app-mobile/components/screens/SsoLoginScreen.tsx:64
@@ -6939,7 +6936,7 @@ msgstr "Växla egen sorteringsordning"
 
 #: packages/app-mobile/components/ScreenHeader/index.tsx:468
 msgid "Toggle plugin editor"
-msgstr "Växla tilläggsredigeraren"
+msgstr "Växla insticksmodulredigeraren"
 
 #: packages/app-desktop/commands/toggleSafeMode.ts:8
 msgid "Toggle safe mode"
@@ -6990,7 +6987,7 @@ msgstr "Prova det nu"
 
 #: packages/app-cli/app/command-keymap.ts:30
 msgid "TYPE"
-msgstr ""
+msgstr "TYP"
 
 #: packages/app-cli/app/command-help.ts:72
 msgid ""
@@ -7011,8 +7008,8 @@ msgid ""
 "commands."
 msgstr ""
 "Skriv titeln på en anteckning för att hoppa till den. Eller skriv # följt av "
-"namnet på en tagg eller@ följt av namnet på en anteckningsbok. Eller skriv : "
-"för att söka efter kommandon."
+"namnet på en tagg eller @ följt av namnet på en anteckningsbok. Eller "
+"skriv : för att söka efter kommandon."
 
 #: packages/app-desktop/plugins/GotoAnything.tsx:706
 msgid "Type a note title to search for it."
@@ -7054,7 +7051,7 @@ msgid ""
 "Uninstall and reinstall the application. Make sure you create a backup first "
 "by exporting all your notes as JEX from the desktop application."
 msgstr ""
-"Avinstallera och installera om applikationen. Se till att du skapar en "
+"Avinstallera och installera om programmet. Se till att du skapar en "
 "säkerhetskopia först genom att exportera alla dina anteckningar som JEX från "
 "skrivbordsapplikationen."
 
@@ -7263,24 +7260,24 @@ msgid ""
 "Use this to rebuild the search index if there is a problem with search. It "
 "may take a long time depending on the number of notes."
 msgstr ""
-"Använd detta för att återuppbygga sökindex om det finns sökproblem. Det kan "
-"ta lång tid beroende på antal anteckningar."
+"Använd detta för att återuppbygga sökindex om det är problem med sökningen. "
+"Det kan ta lång tid beroende på antal anteckningar."
 
 #: packages/app-mobile/components/biometrics/BiometricPopup.tsx:83
 msgid ""
 "Use your biometrics to secure access to your application. You can always set "
 "it up later in Settings."
 msgstr ""
-"Använd din biometri för att säkra åtkomsten till din applikation. Du kan "
-"alltid ställa in det senare i Inställningar."
+"Använd din biometri för att säkra åtkomsten till ditt program. Du kan alltid "
+"ställa in det senare i Inställningar."
 
 #: packages/lib/models/settings/builtInMetadata.ts:1249
 msgid ""
 "Used for most text in the markdown editor. If not found, a generic "
 "proportional (variable width) font is used."
 msgstr ""
-"Används för mest text i markdown-redigeraren. Om det inte hittas används ett "
-"generiskt proportionellt (variabelt bredd) teckensnitt."
+"Används för det mesta av texten i markdown-redigeraren. Om det inte hittas "
+"används ett generiskt proportionellt (variabel bredd) teckensnitt."
 
 #: packages/lib/models/settings/builtInMetadata.ts:1262
 msgid ""
@@ -7388,7 +7385,7 @@ msgstr "Varning"
 #: packages/app-desktop/gui/ResourceScreen.tsx:322
 msgid "Warning: not all resources shown for performance reasons (limit: %s)."
 msgstr ""
-"Varning: alla resurser visas inte för förbättrad prestanda (limit: %s)."
+"Varning: alla resurser visas inte för förbättrad prestanda (gräns: %s)."
 
 #: packages/app-mobile/components/screens/ConfigScreen/plugins/EnablePluginSupportPage.tsx:116
 msgid "We have a system for reporting and removing problematic plugins."
@@ -7486,7 +7483,7 @@ msgid ""
 "text from it. This will allow you to search for text in these attachments."
 msgstr ""
 "När det är aktiverat kommer programmet att skanna dina bilagor och extrahera "
-"texten från den. Detta gör att du kan söka efter text i dessa bilagor."
+"texten från dem. Detta gör att du kan söka efter text i dessa bilagor."
 
 #: packages/app-desktop/ElectronAppWrapper.ts:281
 msgid "Window unresponsive."
@@ -7565,7 +7562,7 @@ msgid ""
 "that some of your notes are encrypted with an obsolete encryption method."
 msgstr ""
 "Du kan använda verktyget nedan för att omkryptera dina data, exempelvis om "
-"du vill veta om vissa av dina anteckningar är krypterade med en gammal "
+"du vet att vissa av dina anteckningar är krypterade med en gammal "
 "krypteringsmetod."
 
 #: packages/lib/services/joplinCloudUtils.ts:53

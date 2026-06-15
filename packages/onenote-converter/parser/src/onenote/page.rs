@@ -7,6 +7,8 @@ use crate::shared::exguid::ExGuid;
 use crate::shared::guid::Guid;
 use parser_utils::errors::{ErrorKind, Result};
 use parser_utils::log::set_current_page;
+use parser_utils::log_warn;
+use time::macros::utc_datetime;
 
 /// A page.
 ///
@@ -19,6 +21,8 @@ pub struct Page {
     entity_id: Guid,
     title: Option<Title>,
     level: i32,
+    updated_at: Option<time::UtcDateTime>,
+    created_at: time::UtcDateTime,
     author: Option<String>,
     height: Option<f32>,
     contents: Vec<PageContent>,
@@ -32,6 +36,16 @@ impl Page {
     /// [\[MS-ONE\] 2.2.64]: https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-one/00f0b68b-db49-4aea-9ad9-7c8e68e5c95d
     pub fn title(&self) -> Option<&Title> {
         self.title.as_ref()
+    }
+
+    /// The time at which the page was created
+    pub fn created_time(&self) -> time::UtcDateTime {
+        self.created_at
+    }
+
+    /// The last updated time for the page, or the created time, if never updated
+    pub fn updated_time(&self) -> time::UtcDateTime {
+        self.updated_at.unwrap_or_else(|| self.created_time())
     }
 
     /// The page's level in the section page tree.
@@ -70,17 +84,14 @@ impl Page {
             .as_ref()
             .and_then(|title| title.contents.first())
             .and_then(Self::outline_text)
-            .and_then(|t| Some(Self::remove_hyperlink(t.to_owned())))
+            .map(|t| Self::remove_hyperlink(t.to_owned()))
             .or_else(|| {
                 self.contents
                     .iter()
                     .filter_map(|page_content| page_content.outline())
                     .filter_map(|t| {
-                        let v = Self::outline_text(t);
-                        if v.is_none() {
-                            return None;
-                        }
-                        return Some(Self::remove_hyperlink(v.unwrap().to_owned()));
+                        let v = Self::outline_text(t)?;
+                        Some(Self::remove_hyperlink(v.to_owned()))
                     })
                     .next()
             })
@@ -107,22 +118,18 @@ impl Page {
 
         let mut title_copy = title.clone();
 
-        loop {
-            // Find the first hyperlink mark
-            if let Some(marker_start) = title_copy.find(HYPERLINK_MARKER) {
-                let hyperlink_part = &title_copy[marker_start + HYPERLINK_MARKER.len()..];
+        // Find the first hyperlink mark
+        while let Some(marker_start) = title_copy.find(HYPERLINK_MARKER) {
+            let hyperlink_part = &title_copy[marker_start + HYPERLINK_MARKER.len()..];
 
-                // Find the closing double quote of the hyperlink
-                if let Some(quote_end) = hyperlink_part.find('"') {
-                    let before_hyperlink = &title_copy[..marker_start];
-                    let after_hyperlink = &hyperlink_part[quote_end + 1..];
-                    title_copy = format!("{}{}", before_hyperlink, after_hyperlink);
-                } else {
-                    // Sometimes links are broken, in these cases we only consider what is before the mark
-                    title_copy = title[..marker_start].to_string();
-                }
+            // Find the closing double quote of the hyperlink
+            if let Some(quote_end) = hyperlink_part.find('"') {
+                let before_hyperlink = &title_copy[..marker_start];
+                let after_hyperlink = &hyperlink_part[quote_end + 1..];
+                title_copy = format!("{}{}", before_hyperlink, after_hyperlink);
             } else {
-                break;
+                // Sometimes links are broken, in these cases we only consider what is before the mark
+                title_copy = title[..marker_start].to_string();
             }
         }
 
@@ -212,6 +219,13 @@ pub(crate) fn parse_page(page_space: ObjectSpaceRef) -> Result<Page> {
 
     Ok(Page {
         entity_id: metadata.entity_guid,
+        updated_at: data.last_modified.map(|time| time.into()),
+        created_at: metadata.created_at.try_into().unwrap_or_else(|error| {
+            log_warn!("Invalid timestamp: {:?}", error);
+            // Fall back to the UNIX epoch for out-of-range timestamps. Since last_modified is represented
+            // with less precision in .one files, this is necessary for created_at, but not updated_at.
+            utc_datetime!(1970-01-01 0:00)
+        }),
         title,
         level,
         author: data.author.map(|author| author.into_value()),

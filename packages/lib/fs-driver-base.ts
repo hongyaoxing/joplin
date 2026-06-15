@@ -1,6 +1,6 @@
 import time from './time';
 import Setting from './models/Setting';
-import { filename, fileExtension } from './path-utils';
+import { basename, filename, fileExtension, rtrimSlashes } from './path-utils';
 const md5 = require('md5');
 import resolvePathWithinDir from './utils/resolvePathWithinDir';
 import { Buffer } from 'buffer';
@@ -24,11 +24,6 @@ export interface RemoveOptions {
 export interface ArchiveExtractOptions {
 	source: string;
 	extractTo: string;
-}
-
-export interface CabExtractOptions extends ArchiveExtractOptions {
-	// Only files matching the pattern will be extracted
-	fileNamePattern: string;
 }
 
 export interface ZipEntry {
@@ -203,8 +198,11 @@ export default class FsDriverBase {
 			return reservedNames.includes(testName.toLowerCase());
 		};
 
-		const nameNoExt = filename(name, true);
-		let extension = fileExtension(name);
+		name = rtrimSlashes(name);
+		const baseName = basename(name);
+		const pathPrefix = name.substring(0, name.length - baseName.length);
+		const nameNoExt = pathPrefix + filename(baseName);
+		let extension = fileExtension(baseName);
 		if (extension) extension = `.${extension}`;
 		let nameToTry = nameNoExt + extension;
 		while (true) {
@@ -275,9 +273,5 @@ export default class FsDriverBase {
 
 	public async zipExtract(_options: ArchiveExtractOptions): Promise<ZipEntry[]> {
 		throw new Error('Not implemented: zipExtract');
-	}
-
-	public async cabExtract(_options: CabExtractOptions) {
-		throw new Error('Not implemented: cabExtract.');
 	}
 }

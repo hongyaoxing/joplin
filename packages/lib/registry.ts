@@ -3,6 +3,7 @@ import Setting from './models/Setting';
 import shim from './shim';
 import SyncTargetRegistry from './SyncTargetRegistry';
 import { AnyAction, Dispatch } from 'redux';
+import Synchronizer from './Synchronizer';
 
 class Registry {
 
@@ -96,7 +97,7 @@ class Registry {
 	// This can be used when some data has been modified and we want to make
 	// sure it gets synced. So we wait for the current sync operation to
 	// finish (if one is running), then we trigger a sync just after.
-	public waitForSyncFinishedThenSync = async () => {
+	public waitForSyncFinishedThenSync = async (delay: number | null = 0) => {
 		if (!Setting.value('sync.target')) {
 			this.logger().info('waitForSyncFinishedThenSync - cancelling because no sync target is selected.');
 			return;
@@ -106,7 +107,7 @@ class Registry {
 		try {
 			const synchronizer = await this.syncTarget().synchronizer();
 			await synchronizer.waitForSyncToFinish();
-			await this.scheduleSync(0);
+			await this.scheduleSync(delay);
 		} finally {
 			this.waitForReSyncCalls_.pop();
 		}
@@ -131,6 +132,15 @@ class Registry {
 				this.scheduleSyncId_ = null;
 			}
 
+			const syncTargetId = Setting.value('sync.target');
+			const isAuthenticated = syncTargetId ? await this.syncTarget(syncTargetId).isAuthenticated() : false;
+			const isPartialSync = syncOptions.syncSteps?.toString() === Synchronizer.partialSyncSteps.toString();
+
+			if (isAuthenticated && isPartialSync) {
+				// Only dispatch the event if a partial sync is scheduled, which is triggered by making a change
+				this.dispatch({ type: 'SYNC_PENDING_UPDATE', value: true });
+			}
+
 			if (Setting.value('env') === 'dev' && delay !== 0) {
 				// this.logger().info('Schedule sync DISABLED!!!');
 				// return;
@@ -140,6 +150,8 @@ class Registry {
 
 			const timeoutCallback = async () => {
 				this.timerCallbackCalls_.push(true);
+				let newContext;
+
 				try {
 					this.scheduleSyncId_ = null;
 					this.logger().info('Preparing scheduled sync');
@@ -197,11 +209,12 @@ class Registry {
 									Setting.setValue(contextKey, JSON.stringify(newContext));
 								};
 							}
-							const newContext = await sync.start(options);
+							newContext = await sync.start(options);
 							Setting.setValue(contextKey, JSON.stringify(newContext));
 						} catch (error) {
 							if (error.code === 'alreadyStarted') {
 								this.logger().info(error.message);
+								newContext = null; // Prevent resetting syncPending to false if another sync is triggered while one is in progress
 							} else {
 								promiseResolve();
 								throw error;
@@ -215,6 +228,11 @@ class Registry {
 					promiseResolve();
 
 				} finally {
+					if (newContext === undefined) {
+						// If the logic in the try block returns before executing the sync, ensure syncPending is reset back to false
+						this.dispatch({ type: 'SYNC_PENDING_UPDATE', value: false });
+					}
+
 					this.timerCallbackCalls_.pop();
 				}
 			};

@@ -8,7 +8,7 @@ import BaseModel from '../../BaseModel';
 import InteropService from './InteropService';
 import InteropService_Importer_OneNote from './InteropService_Importer_OneNote';
 import { JSDOM } from 'jsdom';
-import { ImportModuleOutputFormat } from './types';
+import { ImportModuleOutputFormat, ImportOptions } from './types';
 import HtmlToMd from '../../HtmlToMd';
 
 const instructionMessage = `
@@ -42,18 +42,34 @@ const normalizeNoteForSnapshot = (body: string) => {
 	return removeItemIds(removeDefaultCss(body));
 };
 
+// A single Markdown string is much easier to visually compare during snapshot testing.
+// Prefer notesToMarkdownString to normalizeNoteForSnapshot when the exact output HTML
+// doesn't matter.
+const notesToMarkdownString = (notes: NoteEntity[]) => {
+	const converter = new HtmlToMd();
+	return notes.map(note => {
+		return [
+			`# Note: ${note.title}`,
+			converter.parse(normalizeNoteForSnapshot(note.body)),
+		].join('\n\n');
+	}).sort().join('\n\n\n');
+};
+
 // This file is ignored if not running in CI. Look at onenote-converter/README.md and jest.config.js for more information
 describe('InteropService_Importer_OneNote', () => {
 	let tempDir: string;
-	async function importNote(path: string) {
+	async function importNote(path: string, options: Partial<ImportOptions> = {}) {
 		const newFolder = await Folder.save({ title: 'folder' });
 		const service = InteropService.instance();
+
 		await service.import({
 			outputFormat: ImportModuleOutputFormat.Markdown,
 			path,
 			destinationFolder: newFolder,
 			destinationFolderId: newFolder.id,
+			...options,
 		});
+
 		const allNotes: NoteEntity[] = await Note.all();
 		return allNotes;
 	}
@@ -228,7 +244,7 @@ describe('InteropService_Importer_OneNote', () => {
 	it('should group link parts even if they have different css styles', async () => {
 		const notes = await importNote(`${supportDir}/onenote/remove_hyperlink_on_title.zip`);
 
-		const noteToTest = notes.find(n => n.title === 'Tips from a Pro Using Trees for Dramatic Landscape Photography');
+		const noteToTest = notes.find(n => n.title === 'Tips from a Pro: Using Trees for Dramatic Landscape Photography');
 
 		expectWithInstructions(noteToTest).toBeTruthy();
 		expectWithInstructions(noteToTest.body).toContain('<a href="onenote:https://d.docs.live.net/c8d3bbab7f1acf3a/Documents/Photography/%E9%A3%8E%E6%99%AF.one#Tips%20from%20a%20Pro%20Using%20Trees%20for%20Dramatic%20Landscape%20Photography&amp;section-id={262ADDFB-A4DC-4453-A239-0024D6769962}&amp;page-id={88D803A5-4F43-48D4-9B16-4C024F5787DC}&amp;end" style="">Tips from a Pro: Using Trees for Dramatic Landscape Photography</a>');
@@ -283,6 +299,14 @@ describe('InteropService_Importer_OneNote', () => {
 		expect(normalizeNoteForSnapshot(note2Content)).toMatchSnapshot();
 	});
 
+	it('should import vertically-scaled ink', async () => {
+		const notes = await importNote(`${supportDir}/onenote/scaled_ink.one`);
+
+		const note = notes.find(n => n.title === 'Scaled');
+		expectWithInstructions(note).toBeTruthy();
+		expectWithInstructions(normalizeNoteForSnapshot(note.body)).toMatchSnapshot();
+	});
+
 	it('should support directly importing .one files', async () => {
 		const notes = await importNote(`${supportDir}/onenote/onenote_desktop.one`);
 
@@ -328,5 +352,59 @@ describe('InteropService_Importer_OneNote', () => {
 		const importedNote = notes.find(n => n.title.startsWith('Embedded doc sheet'));
 
 		expect(normalizeNoteForSnapshot(importedNote.body)).toMatchSnapshot('EmbeddedFiles');
+	});
+
+	it('should correctly import .onepkg notebooks', async () => {
+		const notes = await importNote(`${supportDir}/onenote/test.onepkg`);
+
+		expect(notesToMarkdownString(notes)).toMatchSnapshot();
+	});
+
+	it('should report failure, but continue importing other sections', async () => {
+		let errorMessage;
+		const onError = jest.fn((error: unknown) => {
+			errorMessage = String(error);
+		});
+
+		const notes = await withWarningSilenced(
+			/Unexpected end of file/,
+			() => importNote(`${supportDir}/onenote/truncated.zip`, { onError }),
+		);
+		// The truncated section should have failed to import
+		expect(onError).toHaveBeenCalledTimes(1);
+		expect(errorMessage).toMatch(/Unexpected end of file/);
+		// The other section should import successfully
+		expect(notes.map(note => note.title).sort()).toEqual(['Test note', 'Test section']);
+	});
+
+	it('should import nested ink', async () => {
+		const notes = await importNote(`${supportDir}/onenote/desktop_missing_ink.one`);
+		expect(
+			notes
+				.filter(note => note.title === 'Ink Missing - only one example missing part')
+				.map(note => normalizeNoteForSnapshot(note.body))
+				.sort(),
+		).toMatchSnapshot();
+	});
+
+	it('should import inline tags', async () => {
+		const notes = await importNote(`${supportDir}/onenote/tagged-lines.one`);
+		const note = notes.find(note => note.title === 'Checklists');
+		expect(notesToMarkdownString([note])).toMatchSnapshot();
+		expect(normalizeNoteForSnapshot(note.body)).toMatchSnapshot();
+	});
+
+	it('should import bold and italic in a way that can be converted to Markdown', async () => {
+		const notes = await importNote(`${supportDir}/onenote/bold_and_italic.one`);
+		const matchingNotes = notes.filter(n => n.title === 'Bold & italic');
+		expect(notesToMarkdownString(matchingNotes)).toMatchSnapshot();
+	});
+
+	it('should import updated/created timestamps', async () => {
+		const notes = await importNote(`${supportDir}/onenote/testOneNoteEmbeddedWordDoc.one`);
+		const importedNote = notes.find(n => n.title.startsWith('Embedded doc sheet'));
+
+		expect(importedNote.user_updated_time).toBe(new Date('2019-12-11T23:37:28.000Z').getTime());
+		expect(importedNote.user_created_time).toBe(new Date('2019-12-11T23:35:52.000Z').getTime());
 	});
 });

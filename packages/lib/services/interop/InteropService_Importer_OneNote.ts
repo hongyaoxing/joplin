@@ -4,10 +4,12 @@ import InteropService_Importer_Base from './InteropService_Importer_Base';
 import { NoteEntity } from '../database/types';
 import { rtrimSlashes } from '../../path-utils';
 import InteropService_Importer_Md from './InteropService_Importer_Md';
-import { join, resolve, normalize, sep, dirname, extname, basename, relative } from 'path';
+import { join, resolve, normalize, sep, extname, basename, relative, dirname } from 'path';
 import Logger from '@joplin/utils/Logger';
 import { uuidgen } from '../../uuid';
 import shim from '../../shim';
+import { unique } from '../../ArrayUtils';
+import Note from '../../models/Note';
 
 const logger = Logger.create('InteropService_Importer_OneNote');
 
@@ -18,8 +20,35 @@ export type SvgXml = {
 
 type PageResolutionResult = { path: string };
 type PageIdMap = {
-	get: (pageId: string)=> PageResolutionResult|null;
+	get: (pageId: string|null)=> PageResolutionResult|null;
 };
+
+type NativeOneNoteConverter = (notebookPath: string, outputDirectory: string, baseDir: string)=> Promise<void>;
+const getOneNoteConverter = (): NativeOneNoteConverter => {
+	try {
+		return shim.requireDynamic('@joplin/onenote-converter').oneNoteConverter;
+	} catch (error) {
+		// Log the original error for debugging:
+		logger.warn('Failed to load the onenote importer:', error);
+
+		// Throw a more user and maintainer-friendly error:
+		throw new Error('Failed to load @joplin/onenote-converter. Please check that the onenote-converter package was built correctly and bundled with this version of Joplin.\n\nFor build instructions, see https://github.com/laurent22/joplin/blob/dev/packages/onenote-converter/README.md#building.');
+	}
+};
+
+const setEnableUnresponsiveCheck = (enabled: boolean) => {
+	if (shim.isElectron()) {
+		shim.electronBridge().setEnableUnresponsiveCheck(enabled);
+	}
+};
+
+interface NoteMetadata {
+	created: Date;
+	updated: Date;
+	// Saving the title in the metadata allows using special characters not supported by the file
+	// system in imported note titles (e.g. "/")
+	title: string;
+}
 
 // See onenote-converter README.md for more information
 export default class InteropService_Importer_OneNote extends InteropService_Importer_Base {
@@ -47,30 +76,13 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 		if (fileExtension === '.zip') {
 			logger.info('Unzipping files...');
 			await shim.fsDriver().zipExtract({ source: sourcePath, extractTo: targetPath });
-		} else if (fileExtension === '.one') {
+		} else if (fileExtension === '.one' || fileExtension === '.onepkg') {
 			logger.info('Copying file...');
 
 			const outputDirectory = join(targetPath, fileNameNoExtension);
 			await shim.fsDriver().mkdir(outputDirectory);
 
 			await shim.fsDriver().copy(sourcePath, join(outputDirectory, basename(sourcePath)));
-		} else if (fileExtension === '.onepkg') {
-			// Change the file extension so that the archive can be extracted
-			const archivePath = join(targetPath, `${fileNameNoExtension}.cab`);
-			await shim.fsDriver().copy(sourcePath, archivePath);
-
-			const extractPath = join(targetPath, fileNameNoExtension);
-			await shim.fsDriver().mkdir(extractPath);
-
-			await shim.fsDriver().cabExtract({
-				source: archivePath,
-				extractTo: extractPath,
-				// Only the .one files are used--there's no need to extract
-				// other files.
-				fileNamePattern: '*.one',
-			});
-
-			await this.fixIncorrectLatin1Decoding_(extractPath);
 		} else {
 			throw new Error(`Unknown file extension: ${fileExtension}`);
 		}
@@ -86,14 +98,28 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 			return result;
 		}
 
-		const baseFolder = this.getEntryDirectory(unzipTempDirectory, files[0].path);
-		const notebookBaseDir = join(unzipTempDirectory, baseFolder, sep);
-		const outputDirectory2 = join(tempOutputDirectory, baseFolder);
+		const notebookFiles = files.filter(file =>
+			['.one', '.onepkg', '.onetoc2'].includes(extname(file.path).toLowerCase()) &&
+			basename(file.path) !== 'OneNote_RecycleBin.onetoc2',
+		);
 
-		const notebookFiles = files.filter(e => {
-			return extname(e.path) !== '.onetoc2' && basename(e.path) !== 'OneNote_RecycleBin.onetoc2';
-		});
-		const { oneNoteConverter } = shim.requireDynamic('@joplin/onenote-converter');
+		const topLevelEntries = unique(notebookFiles.map(file => this.getEntryDirectory(unzipTempDirectory, file.path)));
+
+		let baseFolder = '';
+		for (const entry of topLevelEntries) {
+			if (!entry) continue;
+			const stat = await shim.fsDriver().stat(join(unzipTempDirectory, entry));
+			if (stat?.isDirectory()) {
+				if (baseFolder) {
+					throw new Error(`OneNote zip contains files from multiple top-level directories: ${JSON.stringify(topLevelEntries)}`);
+				}
+				baseFolder = entry;
+			}
+		}
+
+		const notebookBaseDir = !baseFolder ? join(unzipTempDirectory, sep) : join(unzipTempDirectory, baseFolder, sep);
+		const outputDirectory2 = !baseFolder ? tempOutputDirectory : join(tempOutputDirectory, baseFolder);
+		const oneNoteConverter = getOneNoteConverter();
 
 		logger.info('Extracting OneNote to HTML');
 		const skippedFiles = [];
@@ -101,13 +127,18 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 			const notebookFilePath = join(unzipTempDirectory, notebookFile.path);
 			// In some cases, the OneNote zip file can include folders and other files
 			// that shouldn't be imported directly. Skip these:
-			if (!['.one', '.onetoc2'].includes(extname(notebookFilePath).toLowerCase())) {
+			if (!['.one', '.onepkg'].includes(extname(notebookFilePath).toLowerCase())) {
 				logger.info('Skipping non-OneNote file:', notebookFile.path);
 				skippedFiles.push(notebookFile.path);
 				continue;
 			}
 
 			try {
+				// HACK: The OneNote importer currently runs in the renderer process on desktop.
+				// If importing a large file takes a long time, the "unresponsive" dialog can be
+				// shown. Work around this by temporarily disabling the dialog:
+				setEnableUnresponsiveCheck(false);
+
 				await oneNoteConverter(notebookFilePath, resolve(outputDirectory2), notebookBaseDir);
 			} catch (error) {
 				// Forward only the error message. Usually the stack trace points to bytes in the WASM file.
@@ -115,6 +146,8 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 				// length for auto-creating a forum post:
 				this.options_.onError?.(error.message ?? error);
 				console.error(error);
+			} finally {
+				setEnableUnresponsiveCheck(true);
 			}
 		}
 
@@ -123,10 +156,10 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 		}
 
 		logger.info('Postprocessing imported content...');
-		await this.postprocessGeneratedHtml_(tempOutputDirectory);
+		const fileToMetadata = await this.postprocessGeneratedHtmlInFolder_(tempOutputDirectory);
 
 		logger.info('Importing HTML into Joplin');
-		const importer = new InteropService_Importer_Md();
+		const importer = new OneNoteHtmlImporter(fileToMetadata);
 		importer.setMetadata({ fileExtensions: ['html'] });
 		await importer.init(tempOutputDirectory, {
 			...this.options_,
@@ -165,7 +198,11 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 		}
 
 		return {
-			get: (id: string)=>{
+			get: (id: string|null) => {
+				// Accepting null input matches the behavior of a JavaScript Map's .get method
+				// and simplifies handling 'not found' edge cases:
+				if (!id) return null;
+
 				const path = pageIdToPath.get(id.toUpperCase());
 
 				if (path) {
@@ -176,32 +213,78 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 		};
 	}
 
-	private async postprocessGeneratedHtml_(baseFolder: string) {
+	private async postprocessGeneratedHtmlInFolder_(baseFolder: string) {
 		const htmlFiles = await this.getValidHtmlFiles_(resolve(baseFolder));
-
-		const pipeline = [
-			(dom: Document, currentFolder: string) => this.extractSvgsToFiles_(dom, currentFolder),
-			(dom: Document, currentFolder: string) => this.convertExternalLinksToInternalLinks_(dom, currentFolder),
-			(dom: Document, _currentFolder: string) => Promise.resolve(this.simplifyHtml_(dom)),
-		];
+		const idMap = await this.buildIdMap_(baseFolder);
+		const fileToMetadata = new Map<string, NoteMetadata>();
 
 		for (const file of htmlFiles) {
 			const fileLocation = join(baseFolder, file.path);
 			const originalHtml = await shim.fsDriver().readFile(fileLocation);
-			const dom = this.domParser.parseFromString(originalHtml, 'text/html');
-
-			let changed = false;
-			for (const task of pipeline) {
-				const result = await task(dom, dirname(fileLocation));
-				changed ||= result;
-			}
+			const { changed, html, metadata } = await this.postprocessGeneratedHtml_(originalHtml, dirname(fileLocation), idMap);
 
 			if (changed) {
-				// Don't use xmlSerializer here: It breaks <style> blocks.
-				const updatedHtml = `<!DOCTYPE HTML>\n${dom.documentElement.outerHTML}`;
-				await shim.fsDriver().writeFile(fileLocation, updatedHtml, 'utf-8');
+				await shim.fsDriver().writeFile(fileLocation, html, 'utf-8');
 			}
+
+			fileToMetadata.set(resolve(fileLocation), metadata);
 		}
+
+		return fileToMetadata;
+	}
+
+	// Public to allow testing
+	public async postprocessGeneratedHtml_(html: string, baseFolder: string, idMap: PageIdMap) {
+		const pipeline = [
+			(dom: Document, currentFolder: string) => this.extractSvgsToFiles_(dom, currentFolder),
+			(dom: Document, currentFolder: string) => this.convertExternalLinksToInternalLinks_(dom, currentFolder, idMap),
+			(dom: Document, _currentFolder: string) => Promise.resolve(this.simplifyHtml_(dom)),
+		];
+		// Workaround: HTML read directly from the filesystem can cause parseFromString to hang.
+		// Force creation of a new string.
+		// See https://github.com/laurent22/joplin/issues/15132
+		html = `${html} `.substring(0, html.length);
+		const dom = this.domParser.parseFromString(html, 'text/html');
+
+		const parseMetadata = (dom: Document) => {
+			const parseTimestampMeta = (selector: string) => {
+				const element = dom.querySelector<HTMLMetaElement>(selector);
+				// Not all files processed by the importer have timestamp metadata tags
+				// (e.g. files that contain lists of pages). Fall back:
+				if (!element) return new Date();
+
+				const timeSeconds = Number(element.content);
+				if (!isFinite(timeSeconds) || timeSeconds < 0) return new Date();
+
+				return new Date(timeSeconds * 1000);
+			};
+
+			return {
+				created: parseTimestampMeta('meta[name="X-Created-Time"]'),
+				updated: parseTimestampMeta('meta[name="X-Updated-Time"]'),
+				title: dom.title,
+			};
+		};
+
+		// Parse metadata first, since the pipeline can adjust the HTML:
+		const metadata = parseMetadata(dom);
+
+		let changed = false;
+		for (const task of pipeline) {
+			const result = await task(dom, baseFolder);
+			changed ||= result;
+		}
+
+		if (changed) {
+			// Don't use xmlSerializer here: It breaks <style> blocks.
+			html = `<!DOCTYPE HTML>\n${dom.documentElement.outerHTML}`;
+		}
+
+		return {
+			changed,
+			html,
+			metadata,
+		};
 	}
 
 	private async getValidHtmlFiles_(baseFolder: string) {
@@ -210,13 +293,7 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 		return htmlFiles;
 	}
 
-	private async convertExternalLinksToInternalLinks_(dom: Document, baseFolder: string) {
-		let idMap_: PageIdMap|null = null;
-		const idMap = async () => {
-			idMap_ ??= await this.buildIdMap_(baseFolder);
-			return idMap_;
-		};
-
+	private async convertExternalLinksToInternalLinks_(dom: Document, baseFolder: string, idMap: PageIdMap) {
 		const links = dom.querySelectorAll<HTMLAnchorElement>('a[href^="onenote"]');
 		let changed = false;
 		for (const link of links) {
@@ -227,11 +304,11 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 			const prefixRemoved = link.href.substring(separatorIndex);
 			const params = new URLSearchParams(prefixRemoved);
 			const pageId = params.get('page-id');
-			const targetPage = (await idMap()).get(pageId);
+			const targetPage = idMap.get(pageId);
 
 			// The target page might be in a different notebook (imported separately)
 			if (!targetPage) {
-				logger.info('Page not found for internal link. Page ID: ', pageId);
+				logger.info('Page not found for internal link. Page ID: ', pageId, 'link:', JSON.stringify(link.href));
 			} else {
 				changed = true;
 				link.href = relative(baseFolder, targetPage.path);
@@ -241,19 +318,31 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 	}
 
 	private simplifyHtml_(dom: Document) {
-		const selectors = [
+		const removeLeadingSpace = (element: Element) => {
+			const sibling = element.previousSibling;
+			if (sibling && sibling.nodeName === '#text' && sibling.textContent.trim() === '') {
+				sibling.remove();
+			}
+		};
+
+		const nodesToRemove = [
 			// <script> blocks that aren't marked with a specific type (e.g. application/tex).
-			'script:not([type])',
-			// ID mappings (unused at this stage of the import process)
-			'meta[name="X-Original-Page-Id"]',
+			{ selector: 'script:not([type])' },
+
+			// ID mappings and other metadata (unused at this stage of the import process)
+			// Remove leading space to avoid unnecessary blank lines in test snapshots
+			{ selector: 'meta[name="X-Original-Page-Id"]', preprocess: removeLeadingSpace },
+			{ selector: 'meta[name="X-Created-Time"]', preprocess: removeLeadingSpace },
+			{ selector: 'meta[name="X-Updated-Time"]', preprocess: removeLeadingSpace },
 
 			// Empty iframes
-			'iframe[src=""]',
+			{ selector: 'iframe[src=""]' },
 		];
 
 		let changed = false;
-		for (const selector of selectors) {
+		for (const { selector, preprocess } of nodesToRemove) {
 			for (const element of dom.querySelectorAll(selector)) {
+				preprocess?.(element);
 				element.remove();
 				changed = true;
 			}
@@ -323,47 +412,38 @@ export default class InteropService_Importer_OneNote extends InteropService_Impo
 			changed: true,
 		};
 	}
+}
 
-	// Works around a decoding issue in which file names are extracted as latin1 strings,
-	// rather than UTF-8 strings. For example, OneNote seems to encode filenames as UTF-8 in .onepkg files.
-	// However, EXPAND.EXE reads the filenames as latin1. As a result, "é.one" becomes
-	// "Ã©.one" when extracted from the archive.
-	// This workaround re-encodes filenames as UTF-8.
-	private async fixIncorrectLatin1Decoding_(parentDir: string) {
-		// Only seems to be necessary on Windows.
-		if (!shim.isWindows()) return;
+class OneNoteHtmlImporter extends InteropService_Importer_Md {
+	public constructor(private noteMetadata_: Map<string, NoteMetadata>) {
+		super();
+	}
 
-		const fixEncoding = async (basePath: string, fileName: string) => {
-			const originalPath = join(basePath, fileName);
-			let newPath;
+	public override async importFile(filePath: string, parentFolderId: string) {
+		try {
+			const resolvedPath = shim.fsDriver().resolve(filePath);
+			const note = await super.importFile(filePath, parentFolderId);
 
-			let fixedFileName = Buffer.from(fileName, 'latin1').toString('utf8');
-			if (fixedFileName !== fileName) {
-				// In general, the path shouldn't start with "."s or contain path separators.
-				// However, if it does, these characters might cause import errors, so remove them:
-				fixedFileName = fixedFileName.replace(/^\.+/, '');
-				fixedFileName = fixedFileName.replace(/[/\\]/g, ' ');
+			const metadata = this.noteMetadata_.get(resolvedPath);
+			if (metadata) {
+				const updatedNote = {
+					...note,
 
-				// Avoid path traversal: Ensure that the file path is contained within the base directory
-				const newFullPathSafe = shim.fsDriver().resolveRelativePathWithinDir(basePath, fixedFileName);
-				await shim.fsDriver().move(originalPath, newFullPathSafe);
+					user_updated_time: metadata.updated.getTime(),
+					user_created_time: metadata.created.getTime(),
+					title: metadata.title || note.title,
+				};
 
-				newPath = newFullPathSafe;
+				const noteItem = await Note.save(updatedNote, { isNew: false, autoTimestamp: false });
+
+				this.importedNotes[resolvedPath] = noteItem;
+				return noteItem;
 			} else {
-				newPath = originalPath;
+				return note;
 			}
-
-			if (await shim.fsDriver().isDirectory(originalPath)) {
-				const children = await shim.fsDriver().readDirStats(newPath, { recursive: false });
-				for (const child of children) {
-					await fixEncoding(originalPath, child.path);
-				}
-			}
-		};
-
-		const stats = await shim.fsDriver().readDirStats(parentDir, { recursive: false });
-		for (const stat of stats) {
-			await fixEncoding(parentDir, stat.path);
+		} catch (error) {
+			error.message = `On ${filePath}: ${error.message}`;
+			throw error;
 		}
 	}
 }

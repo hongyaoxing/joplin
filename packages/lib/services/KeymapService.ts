@@ -11,6 +11,13 @@ const modifiersRegExp = {
 	default: /^(Ctrl|Alt|AltGr|Shift|Super)$/,
 };
 
+// Maps legacy command names (used in keymap files saved before 3.6.11) to their
+// current equivalents, so old custom keymaps can still be imported.
+const legacyCommandAliases: Record<string, string> = {
+	'editor.undo': 'globalUndo',
+	'editor.redo': 'globalRedo',
+};
+
 const defaultKeymapItems = {
 	darwin: [
 		{ accelerator: 'Cmd+N', command: 'newNote' },
@@ -25,6 +32,7 @@ const defaultKeymapItems = {
 		{ accelerator: 'Cmd+X', command: 'textCut' },
 		{ accelerator: 'Cmd+V', command: 'textPaste' },
 		{ accelerator: 'Cmd+Shift+V', command: 'pasteAsText' },
+		{ accelerator: 'Shift+Option+Cmd+V', command: 'pasteAsMarkdown' },
 		{ accelerator: 'Cmd+A', command: 'textSelectAll' },
 		{ accelerator: 'Cmd+B', command: 'textBold' },
 		{ accelerator: 'Cmd+I', command: 'textItalic' },
@@ -52,8 +60,8 @@ const defaultKeymapItems = {
 		{ accelerator: 'F1', command: 'help' },
 		{ accelerator: 'Cmd+D', command: 'editor.deleteLine' },
 		{ accelerator: 'Shift+Cmd+D', command: 'editor.duplicateLine' },
-		{ accelerator: 'Cmd+Z', command: 'editor.undo' },
-		{ accelerator: 'Cmd+Y', command: 'editor.redo' },
+		{ accelerator: 'Cmd+Z', command: 'globalUndo' },
+		{ accelerator: 'Cmd+Shift+Z', command: 'globalRedo' },
 		{ accelerator: 'Cmd+[', command: 'editor.indentLess' },
 		{ accelerator: 'Cmd+]', command: 'editor.indentMore' },
 		{ accelerator: 'Cmd+/', command: 'editor.toggleComment' },
@@ -73,10 +81,12 @@ const defaultKeymapItems = {
 		{ accelerator: 'Ctrl+T', command: 'newTodo' },
 		{ accelerator: 'Ctrl+S', command: 'synchronize' },
 		{ accelerator: 'Ctrl+Q', command: 'quit' },
+		{ accelerator: 'Ctrl+W', command: 'closeWindow' },
 		{ accelerator: 'Ctrl+C', command: 'textCopy' },
 		{ accelerator: 'Ctrl+X', command: 'textCut' },
 		{ accelerator: 'Ctrl+V', command: 'textPaste' },
 		{ accelerator: 'Ctrl+Shift+V', command: 'pasteAsText' },
+		{ accelerator: 'Ctrl+Shift+Alt+V', command: 'pasteAsMarkdown' },
 		{ accelerator: 'Ctrl+A', command: 'textSelectAll' },
 		{ accelerator: 'Ctrl+B', command: 'textBold' },
 		{ accelerator: 'Ctrl+I', command: 'textItalic' },
@@ -106,8 +116,8 @@ const defaultKeymapItems = {
 		{ accelerator: 'F1', command: 'help' },
 		{ accelerator: 'Ctrl+D', command: 'editor.deleteLine' },
 		{ accelerator: 'Shift+Ctrl+D', command: 'editor.duplicateLine' },
-		{ accelerator: 'Ctrl+Z', command: 'editor.undo' },
-		{ accelerator: 'Ctrl+Y', command: 'editor.redo' },
+		{ accelerator: 'Ctrl+Z', command: 'globalUndo' },
+		{ accelerator: 'Ctrl+Y', command: 'globalRedo' },
 		{ accelerator: 'Ctrl+[', command: 'editor.indentLess' },
 		{ accelerator: 'Ctrl+]', command: 'editor.indentMore' },
 		{ accelerator: 'Ctrl+/', command: 'editor.toggleComment' },
@@ -310,12 +320,16 @@ export default class KeymapService extends BaseService {
 				// Throws if there are any issues in the keymap item
 				this.validateKeymapItem(item);
 
+				// Rewrite legacy command names so keymaps saved before 3.6.11
+				// still import cleanly.
+				const command = legacyCommandAliases[item.command] || item.command;
+
 				// If the command does not exist in the keymap, we are loading a new
 				// command accelerator so we need to register it.
-				if (!this.keymap[item.command]) {
-					this.registerCommandAccelerator(item.command, item.accelerator);
+				if (!this.keymap[command]) {
+					this.registerCommandAccelerator(command, item.accelerator);
 				} else {
-					this.setAccelerator(item.command, item.accelerator);
+					this.setAccelerator(command, item.accelerator);
 				}
 			}
 
